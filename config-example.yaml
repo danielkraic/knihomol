@@ -1,0 +1,9 @@
+addr: 0.0.0.0:5000
+api_prefix: "/v1"
+timeout: 3
+
+storage:
+  uri: "mongodb://localhost:27017"
+  db_name: "knihomol"
+  collection_name: "books"
+  timeout: 3
