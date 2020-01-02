@@ -3,7 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"os"
 	"time"
@@ -39,12 +39,12 @@ func (apiInstance *API) Run(done chan os.Signal) {
 	}
 
 	go func() {
-		log.Printf("Starting server on %s", apiInstance.configuration.Addr)
+		log.Infof("Starting server on %s", apiInstance.configuration.Addr)
 		log.Fatal(httpServer.ListenAndServe())
 	}()
 
 	<-done
-	log.Println("Shutdown signal received. Exiting.")
+	log.Info("Shutdown signal received. Exiting.")
 
 	err := httpServer.Shutdown(context.Background())
 	if err != nil {
@@ -62,6 +62,7 @@ func (apiInstance *API) createRouter() *mux.Router {
 
 	r.Handle(versioned("/books"), handlers.NewGetBooksHandler(apiInstance.storage, time.Duration(apiInstance.configuration.Timeout)*time.Second)).Methods("GET")
 	r.Handle(versioned("/items"), handlers.NewFindItemsHandler(apiInstance.storage, time.Duration(apiInstance.configuration.Timeout)*time.Second)).Methods("GET")
+	r.Handle(versioned("/save"), handlers.NewAddBookHandler(apiInstance.storage, time.Duration(apiInstance.configuration.Timeout)*time.Second)).Methods("POST")
 
 	r.Handle("/version", handlers.NewVersionHandler(apiInstance.version)).Methods("GET")
 	r.HandleFunc("/health", handlers.HealthHandlerFunc).Methods("GET")

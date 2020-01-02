@@ -29,6 +29,11 @@ func NewStorage(cfg *configuration.Storage, timeout time.Duration) (*Storage, er
 		return nil, fmt.Errorf("failed to connect to mongo %s: %s", cfg.URI, err)
 	}
 
+	err = client.Ping(ctx, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to ping to mongo %s: %s", cfg.URI, err)
+	}
+
 	return &Storage{
 		client:     client,
 		collection: client.Database(cfg.DBName).Collection(cfg.CollectionName),
@@ -36,7 +41,7 @@ func NewStorage(cfg *configuration.Storage, timeout time.Duration) (*Storage, er
 }
 
 //GetBooks retrieve books from DB
-func (s *Storage) GetBooks(ctx context.Context) ([]*books.BookDetails, error) {
+func (s *Storage) GetBooks(ctx context.Context) ([]*books.Book, error) {
 	cur, err := s.collection.Find(ctx, bson.M{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get books: %s", err)
@@ -48,17 +53,23 @@ func (s *Storage) GetBooks(ctx context.Context) ([]*books.BookDetails, error) {
 		}
 	}()
 
-	var result []*books.BookDetails
-	err = cur.Decode(&result)
-	if err != nil {
-		return nil, fmt.Errorf("failed to decode books from DB: %s", err)
+	result := []*books.Book{}
+
+	for cur.Next(ctx) {
+		var item *books.Book
+		err = cur.Decode(&item)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decode book from DB: %s", err)
+		}
+
+		result = append(result, item)
 	}
 
 	return result, nil
 }
 
 //SaveBook saves book from DB
-func (s *Storage) SaveBook(ctx context.Context, book *books.BookDetails) error {
+func (s *Storage) SaveBook(ctx context.Context, book *books.Book) error {
 	data, err := bson.Marshal(book)
 	if err != nil {
 		return fmt.Errorf("failed to marshall book to bson: %s", err)

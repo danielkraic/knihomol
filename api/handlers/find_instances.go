@@ -3,7 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"time"
 
@@ -18,7 +18,7 @@ type findItemsHandler struct {
 	timeout    time.Duration
 }
 
-// NewFindItemsHandler creates Version handler
+// NewFindItemsHandler creates handler to find books
 func NewFindItemsHandler(apiStorage *storage.Storage, timeout time.Duration) http.Handler {
 	return &findItemsHandler{
 		apiStorage: apiStorage,
@@ -34,16 +34,17 @@ func (h *findItemsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	booksToFind, err := h.apiStorage.GetBooks(ctx)
 	if err != nil {
-		log.Printf("failed to get books json: %s", err)
+		log.Errorf("failed to get books json: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	result := bookfinder.FindBooksItem(h.finder, booksToFind)
+	log.Debugf("finding items for %d books", len(booksToFind))
+	result := bookfinder.FindBooksItems(h.finder, booksToFind)
 
 	err = json.NewEncoder(w).Encode(result)
 	if err != nil {
-		log.Printf("failed to encode json: %s", err)
+		log.Errorf("failed to encode json: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

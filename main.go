@@ -1,11 +1,13 @@
 package main
 
 import (
-	"log"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/danielkraic/knihomol/api"
 	"github.com/danielkraic/knihomol/api/handlers"
@@ -24,6 +26,10 @@ var (
 	// Build will be set during build
 	Build = ""
 )
+
+func init() {
+	log.SetLevel(log.DebugLevel)
+}
 
 func main() {
 	pflag.StringP("addr", "a", "0.0.0.0:80", "HTTP service address.")
@@ -48,7 +54,7 @@ func main() {
 	}
 
 	if *checkConfig {
-		log.Println("Configuration checked")
+		fmt.Println("Configuration checked")
 		return
 	}
 

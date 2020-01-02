@@ -5,14 +5,16 @@ import (
 	"strings"
 )
 
-//BookDetails contains book details
-type BookDetails struct {
-	ID     string `json:"book_id" bson:"book_id"`
-	Title  string `json:"title" bson:"title"`
-	Author string `json:"author" bson:"author"`
+//Book contains book details
+type Book struct {
+	ID     string      `json:"id" bson:"_id"`
+	Title  string      `json:"title" bson:"title"`
+	Author string      `json:"author" bson:"author"`
+	URL    string      `json:"url" bson:"-"`
+	Items  []*BookItem `json:"items" bson:"-"`
 }
 
-func (book BookDetails) String() string {
+func (book Book) String() string {
 	items := strings.Split(book.Title, "/")
 	titleSimple := strings.TrimSpace(items[0])
 

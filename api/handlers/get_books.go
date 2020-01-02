@@ -3,7 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"time"
 
@@ -18,7 +18,15 @@ type getBooksHandler struct {
 	timeout    time.Duration
 }
 
-// NewGetBooksHandler creates Version handler
+//Book contains book details
+type getBooksResult struct {
+	ID     string `json:"id"`
+	Title  string `json:"title"`
+	Author string `json:"author"`
+	URL    string `json:"url"`
+}
+
+// NewGetBooksHandler creates handler to get books
 func NewGetBooksHandler(apiStorage *storage.Storage, timeout time.Duration) http.Handler {
 	return &getBooksHandler{
 		apiStorage: apiStorage,
@@ -32,16 +40,26 @@ func (h *getBooksHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), h.timeout)
 	defer cancel()
 
-	result, err := h.apiStorage.GetBooks(ctx)
+	storedBooks, err := h.apiStorage.GetBooks(ctx)
 	if err != nil {
-		log.Printf("failed to get books: %s", err)
+		log.Errorf("failed to get books: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
+	var result []getBooksResult
+	for _, book := range storedBooks {
+		result = append(result, getBooksResult{
+			ID:     book.ID,
+			Title:  book.Title,
+			Author: book.Author,
+			URL:    h.finder.GetItemURL(book.ID),
+		})
+	}
+
 	err = json.NewEncoder(w).Encode(result)
 	if err != nil {
-		log.Printf("failed to encode json: %s", err)
+		log.Errorf("failed to encode json: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

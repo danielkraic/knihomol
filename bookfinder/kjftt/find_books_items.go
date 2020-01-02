@@ -2,45 +2,51 @@ package kjftt
 
 import (
 	"fmt"
-	"net/url"
-
 	"github.com/PuerkitoBio/goquery"
 	"github.com/danielkraic/knihomol/books"
+	log "github.com/sirupsen/logrus"
+	"strings"
 )
 
-//FindBooksItem finds book items in library for given book
-func (kjftt *KJFTT) FindBooksItem(book *books.BookDetails) ([]*books.BookItem, error) {
-	doc, err := kjftt.httpGet(getItemURL(book))
+//FindBooksItems finds book items in library for given book
+func (kjftt *KJFTT) FindBooksItems(bookID string) (*books.Book, error) {
+	doc, err := kjftt.httpGet(kjftt.GetItemURL(bookID))
 	if err != nil {
 		return nil, err
 	}
 
-	var result []*books.BookItem
+	var items []*books.BookItem
 
 	doc.Find("#tabContents-1 tbody").Each(func(ibody int, body *goquery.Selection) {
 		body.Find("tr").Each(func(itr int, tr *goquery.Selection) {
-			// if tr.("display: none")
-			ulozenie := tr.Find("td:nth-child(1)").Text()
-			signatura := tr.Find("td:nth-child(2)").Text()
-			ciarovyKod := tr.Find("td:nth-child(3)").Text()
-			dostupnost := tr.Find("td:nth-child(4)").Text()
-			status := tr.Find("td:nth-child(5)").Text()
+			style, found := tr.Attr("style")
+			if found && style == "display: none;" {
+				// skip hidden <tr>
+				return
+			}
 
-			result = append(result, &books.BookItem{
-				Details:   book,
-				ID:        ciarovyKod,
-				Available: false,
-				Location:  fmt.Sprintf("u=%s s=%s d=%s s=%s", ulozenie, signatura, dostupnost, status),
+			ulozenie := strings.TrimSpace(tr.Find("td:nth-child(1)").Text())
+			signatura := strings.TrimSpace(tr.Find("td:nth-child(2)").Text())
+			ciarovyKod := strings.TrimSpace(tr.Find("td:nth-child(3)").Text())
+			dostupnost := strings.TrimSpace(tr.Find("td:nth-child(4)").Text())
+			status := strings.TrimSpace(tr.Find("td:nth-child(5)").Text())
+
+			items = append(items, &books.BookItem{
+				ItemID:    ciarovyKod,
+				Available: dostupnost == "Vypožičateľné" && status == "Dostupné",
+				Status:    fmt.Sprintf("%s %s", dostupnost, status),
+				Location:  fmt.Sprintf("%s %s", ulozenie, signatura),
 			})
 		})
 	})
 
-	return result, nil
-}
+	log.Debugf("items found: %d", len(items))
 
-func getItemURL(book *books.BookDetails) string {
-	values := url.Values{}
-	values.Add("theme", "ttkjf")
-	values.Add("id", book.ID)
-	return "https://chamo.kis3g.sk/lib/item?" + values.Encode()
+	return &books.Book{
+		ID:     bookID,
+		Title:  doc.Find(".title").First().Text(),
+		Author: doc.Find(".author").First().Text(),
+		URL:    kjftt.GetItemURL(bookID),
+		Items:  items,
+	}, nil
 }

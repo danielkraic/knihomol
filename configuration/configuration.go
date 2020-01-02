@@ -2,6 +2,7 @@ package configuration
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/spf13/pflag"
@@ -68,7 +69,7 @@ func NewConfiguration(configFilePath string) (*Configuration, error) {
 func (c *Configuration) PrintConfiguration() {
 	data, err := yaml.Marshal(c)
 	if err != nil {
-		fmt.Printf("failed to print configuration: %s", err)
+		fmt.Fprintf(os.Stderr, "failed to print configuration: %s", err)
 		return
 	}
 	fmt.Printf("%s\n", data)

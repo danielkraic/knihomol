@@ -2,39 +2,51 @@ package bookfinder
 
 import (
 	"github.com/danielkraic/knihomol/books"
+	log "github.com/sirupsen/logrus"
 )
 
 //BookFinder find books and its items in library
 type BookFinder interface {
 	//FindBooks finds books in library by given find query
-	FindBooks(findQuery string) ([]*books.BookDetails, error)
+	FindBooks(findQuery string) ([]*books.Book, error)
 
-	//FindBooksItem finds book items in library for given book
-	FindBooksItem(book *books.BookDetails) ([]*books.BookItem, error)
+	//GetBook return book details
+	GetBook(bookID string) (*books.Book, error)
+
+	//FindBooksItems finds book items in library for given book
+	FindBooksItems(bookID string) (*books.Book, error)
+
+	// GetItemURL return URl to view book items
+	GetItemURL(bookID string) string
 }
 
-//FindBooksItemResult result of one find o book items
-type FindBooksItemResult struct {
-	items []*books.BookItem
-	err   error
+//FindBooksItemsResult result of one find o book items
+type FindBooksItemsResult struct {
+	Book  *books.Book `json:"book"`
+	Error error       `json:"error"`
 }
 
-//FindBooksItem finds books items in parallel
-func FindBooksItem(finder BookFinder, booksToFind []*books.BookDetails) []*FindBooksItemResult {
-	resultsChan := make(chan *FindBooksItemResult, len(booksToFind))
+//FindBooksItems finds books items in parallel
+func FindBooksItems(finder BookFinder, booksToFind []*books.Book) []*FindBooksItemsResult {
+	resultsChan := make(chan *FindBooksItemsResult, len(booksToFind))
 
-	for _, book := range booksToFind {
-		go func(book *books.BookDetails) {
-			items, err := finder.FindBooksItem(book)
-			resultsChan <- &FindBooksItemResult{
-				items: items,
-				err:   err,
+	for _, bookToFind := range booksToFind {
+		go func(bookToFind *books.Book) {
+			log.Debugf("finding items for book %s STARTED", bookToFind.ID)
+
+			result, err := finder.FindBooksItems(bookToFind.ID)
+			log.Debugf("finding items for book %s DONE. items=%d. error=%s", bookToFind.ID, len(result.Items), err)
+
+			resultsChan <- &FindBooksItemsResult{
+				Book:  result,
+				Error: err,
 			}
-		}(book)
+		}(bookToFind)
 	}
 
-	var results []*FindBooksItemResult
-	for result := range resultsChan {
+	var results []*FindBooksItemsResult
+	for i := 0; i < len(booksToFind); i++ {
+		result := <-resultsChan
 		results = append(results, result)
 	}
 
