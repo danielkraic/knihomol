@@ -33,7 +33,7 @@ func (kjftt *KJFTT) FindBooksItems(bookID string) (*books.Book, error) {
 
 			items = append(items, &books.BookItem{
 				ItemID:    ciarovyKod,
-				Available: dostupnost == "Vypožičateľné" && status == "Dostupné",
+				Available: strings.HasPrefix(dostupnost, "Vypožičateľné") && strings.HasPrefix(status, "Dostupné"),
 				Status:    fmt.Sprintf("%s %s", dostupnost, status),
 				Location:  fmt.Sprintf("%s %s", ulozenie, signatura),
 			})
