@@ -17,15 +17,15 @@ type addBookRequest struct {
 }
 
 type addBookHandler struct {
-	apiStorage *storage.Storage
+	webStorage *storage.Storage
 	finder     bookfinder.BookFinder
 	timeout    time.Duration
 }
 
 // NewAddBookHandler creates handler to save book
-func NewAddBookHandler(apiStorage *storage.Storage, timeout time.Duration) http.Handler {
+func NewAddBookHandler(webStorage *storage.Storage, timeout time.Duration) http.Handler {
 	return &addBookHandler{
-		apiStorage: apiStorage,
+		webStorage: webStorage,
 		finder:     kjftt.NewKJFTT(timeout),
 		timeout:    timeout,
 	}
@@ -51,7 +51,7 @@ func (h *addBookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.apiStorage.SaveBook(ctx, book)
+	err = h.webStorage.SaveBook(ctx, book)
 	if err != nil {
 		log.Errorf("failed to save book: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)

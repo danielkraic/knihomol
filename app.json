@@ -1,0 +1,11 @@
+{
+  "name": "Knihomol Heroku App",
+  "description": "Find books in your favourite library",
+  "keywords": [
+    "golang",
+    "go",
+    "books"
+  ],
+  "website": "github.com/danielkraic/knihomol",
+  "repository": "github.com/danielkraic/knihomol"
+}

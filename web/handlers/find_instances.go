@@ -3,9 +3,10 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/danielkraic/knihomol/bookfinder"
 	"github.com/danielkraic/knihomol/bookfinder/kjftt"
@@ -13,15 +14,15 @@ import (
 )
 
 type findItemsHandler struct {
-	apiStorage *storage.Storage
+	webStorage *storage.Storage
 	finder     bookfinder.BookFinder
 	timeout    time.Duration
 }
 
 // NewFindItemsHandler creates handler to find books
-func NewFindItemsHandler(apiStorage *storage.Storage, timeout time.Duration) http.Handler {
+func NewFindItemsHandler(webStorage *storage.Storage, timeout time.Duration) http.Handler {
 	return &findItemsHandler{
-		apiStorage: apiStorage,
+		webStorage: webStorage,
 		finder:     kjftt.NewKJFTT(timeout),
 		timeout:    timeout,
 	}
@@ -32,7 +33,7 @@ func (h *findItemsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), h.timeout)
 	defer cancel()
 
-	booksToFind, err := h.apiStorage.GetBooks(ctx)
+	booksToFind, err := h.webStorage.GetBooks(ctx)
 	if err != nil {
 		log.Errorf("failed to get books json: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)

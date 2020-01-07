@@ -9,10 +9,10 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/danielkraic/knihomol/api"
-	"github.com/danielkraic/knihomol/api/handlers"
 	"github.com/danielkraic/knihomol/configuration"
 	"github.com/danielkraic/knihomol/storage"
+	"github.com/danielkraic/knihomol/web"
+	"github.com/danielkraic/knihomol/web/handlers"
 	"github.com/spf13/pflag"
 )
 
@@ -61,37 +61,10 @@ func main() {
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
 
-	app, err := api.NewAPI(&handlers.Version{Version: Version, Commit: Commit, Build: Build}, apiConfiguration, apiStorage)
+	web, err := web.NewWeb(&handlers.Version{Version: Version, Commit: Commit, Build: Build}, apiConfiguration, apiStorage)
 	if err != nil {
 		log.Fatalf("failed to create API: %s", err)
 	}
 
-	app.Run(signalChan)
-
-	// findQuery := strings.Join(os.Args[1:], " ")
-	// if findQuery == "" {
-	// 	fmt.Printf("Usage: %s find_query\n", os.Args[0])
-	// 	return
-	// }
-
-	// books, err := findBooks(findQuery)
-
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// fmt.Printf("%d books found for \"%s\"\n", len(books), findQuery)
-	// for i, book := range books {
-	// 	fmt.Printf("%d: %s\n", i+1, book)
-	// }
-
-	// fmt.Println("")
-
-	// for _, book := range books {
-	// 	err := findBooksExamplars(book)
-	// 	if err != nil {
-	// 		fmt.Printf("err=%s\n", err)
-	// 	}
-	// 	fmt.Println("")
-	// }
+	web.Run(signalChan)
 }

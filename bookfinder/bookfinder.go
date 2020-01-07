@@ -44,7 +44,7 @@ func FindBooksItems(finder BookFinder, booksToFind []*books.Book) []*FindBooksIt
 		}(bookToFind)
 	}
 
-	var results []*FindBooksItemsResult
+	results := make([]*FindBooksItemsResult, 0)
 	for i := 0; i < len(booksToFind); i++ {
 		result := <-resultsChan
 		results = append(results, result)
