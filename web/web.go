@@ -63,11 +63,11 @@ func (webInstance *Web) createRouter() (*mux.Router, error) {
 	r := mux.NewRouter()
 
 	// UI
-	findItemsHandler, err := ui.NewFindItemsHandler(webInstance.storage, time.Duration(webInstance.configuration.Timeout)*time.Second)
+	getItemsHandler, err := ui.NewGetItemsHandler(webInstance.storage, time.Duration(webInstance.configuration.Timeout)*time.Second)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create find items handler: %s", err)
 	}
-	r.Handle("/", findItemsHandler).Methods("GET")
+	r.Handle("/", getItemsHandler).Methods("GET")
 
 	// API
 	versioned := func(route string) string {

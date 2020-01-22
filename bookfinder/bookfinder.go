@@ -1,7 +1,11 @@
 package bookfinder
 
 import (
+	"context"
+	"time"
+
 	"github.com/danielkraic/knihomol/books"
+	"github.com/danielkraic/knihomol/storage"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -14,41 +18,36 @@ type BookFinder interface {
 	GetBook(bookID string) (*books.Book, error)
 
 	//FindBooksItems finds book items in library for given book
-	FindBooksItems(bookID string) (*books.Book, error)
+	FindBooksItems(bookID string) *books.Book
 
 	// GetItemURL return URl to view book items
 	GetItemURL(bookID string) string
 }
 
-//FindBooksItemsResult result of one find o book items
-type FindBooksItemsResult struct {
-	Book  *books.Book `json:"book"`
-	Error error       `json:"error"`
-}
-
 //FindBooksItems finds books items in parallel
-func FindBooksItems(finder BookFinder, booksToFind []*books.Book) []*FindBooksItemsResult {
-	resultsChan := make(chan *FindBooksItemsResult, len(booksToFind))
+func FindBooksItems(finder BookFinder, booksToFind []*books.Book, webStorage *storage.Storage, storageTimeout time.Duration) {
+	resultsChan := make(chan *books.Book, len(booksToFind))
 
 	for _, bookToFind := range booksToFind {
 		go func(bookToFind *books.Book) {
 			log.Debugf("finding items for book %s STARTED", bookToFind.ID)
 
-			result, err := finder.FindBooksItems(bookToFind.ID)
-			log.Debugf("finding items for book %s DONE. items=%d. error=%s", bookToFind.ID, len(result.Items), err)
+			result := finder.FindBooksItems(bookToFind.ID)
+			result.LastUpdate = time.Now().Format("2006-01-02 15:04:05")
+			log.Debugf("finding items for book %s DONE. items=%d. error=%s", bookToFind.ID, len(result.Items), result.Error)
 
-			resultsChan <- &FindBooksItemsResult{
-				Book:  result,
-				Error: err,
-			}
+			resultsChan <- result
 		}(bookToFind)
 	}
 
-	results := make([]*FindBooksItemsResult, 0)
 	for i := 0; i < len(booksToFind); i++ {
 		result := <-resultsChan
-		results = append(results, result)
-	}
+		ctx, cancel := context.WithTimeout(context.Background(), storageTimeout)
+		defer cancel()
 
-	return results
+		err := webStorage.SaveBook(ctx, result)
+		if err != nil {
+			log.Warnf("failed to save book %s: %s", result.ID, err)
+		}
+	}
 }

@@ -9,6 +9,7 @@ import (
 
 	"github.com/danielkraic/knihomol/bookfinder"
 	"github.com/danielkraic/knihomol/bookfinder/kjftt"
+	"github.com/danielkraic/knihomol/books"
 	"github.com/danielkraic/knihomol/storage"
 )
 
@@ -33,7 +34,7 @@ func NewAddBookHandler(webStorage *storage.Storage, timeout time.Duration) http.
 
 // ServeHTTP serves http request
 func (h *addBookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ctx, cancel := context.WithTimeout(context.Background(), h.timeout)
+	_, cancel := context.WithTimeout(context.Background(), h.timeout)
 	defer cancel()
 
 	var bookID addBookRequest
@@ -51,10 +52,6 @@ func (h *addBookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.webStorage.SaveBook(ctx, book)
-	if err != nil {
-		log.Errorf("failed to save book: %s", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+	toFind := []*books.Book{book}
+	bookfinder.FindBooksItems(h.finder, toFind, h.webStorage, h.timeout)
 }

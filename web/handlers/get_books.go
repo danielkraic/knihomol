@@ -18,14 +18,6 @@ type getBooksHandler struct {
 	timeout    time.Duration
 }
 
-//Book contains book details
-type getBooksResult struct {
-	ID     string `json:"id"`
-	Title  string `json:"title"`
-	Author string `json:"author"`
-	URL    string `json:"url"`
-}
-
 // NewGetBooksHandler creates handler to get books
 func NewGetBooksHandler(webStorage *storage.Storage, timeout time.Duration) http.Handler {
 	return &getBooksHandler{
@@ -47,17 +39,7 @@ func (h *getBooksHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result := make([]getBooksResult, 0)
-	for _, book := range storedBooks {
-		result = append(result, getBooksResult{
-			ID:     book.ID,
-			Title:  book.Title,
-			Author: book.Author,
-			URL:    h.finder.GetItemURL(book.ID),
-		})
-	}
-
-	err = json.NewEncoder(w).Encode(result)
+	err = json.NewEncoder(w).Encode(storedBooks)
 	if err != nil {
 		log.Errorf("failed to encode json: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)

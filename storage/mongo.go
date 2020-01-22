@@ -9,6 +9,7 @@ import (
 	"github.com/danielkraic/knihomol/books"
 	"github.com/danielkraic/knihomol/configuration"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -70,12 +71,12 @@ func (s *Storage) GetBooks(ctx context.Context) ([]*books.Book, error) {
 
 //SaveBook saves book from DB
 func (s *Storage) SaveBook(ctx context.Context, book *books.Book) error {
-	data, err := bson.Marshal(book)
-	if err != nil {
-		return fmt.Errorf("failed to marshall book to bson: %s", err)
-	}
+	filter := bson.D{primitive.E{Key: "_id", Value: book.ID}}
+	update := bson.D{primitive.E{Key: "$set", Value: book}}
+	opt := &options.UpdateOptions{}
+	opt.SetUpsert(true)
 
-	_, err = s.collection.InsertOne(ctx, data)
+	_, err := s.collection.UpdateOne(ctx, filter, update, opt)
 	if err != nil {
 		return fmt.Errorf("failed to save book: %s", err)
 	}

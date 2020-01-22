@@ -9,10 +9,13 @@ import (
 )
 
 //FindBooksItems finds book items in library for given book
-func (kjftt *KJFTT) FindBooksItems(bookID string) (*books.Book, error) {
+func (kjftt *KJFTT) FindBooksItems(bookID string) *books.Book {
 	doc, err := kjftt.httpGet(kjftt.GetItemURL(bookID))
 	if err != nil {
-		return nil, err
+		return &books.Book{
+			ID:    bookID,
+			Error: err.Error(),
+		}
 	}
 
 	var items []*books.BookItem
@@ -48,5 +51,5 @@ func (kjftt *KJFTT) FindBooksItems(bookID string) (*books.Book, error) {
 		Author: doc.Find(".author").First().Text(),
 		URL:    kjftt.GetItemURL(bookID),
 		Items:  items,
-	}, nil
+	}
 }

@@ -15,36 +15,37 @@ import (
 	"github.com/danielkraic/knihomol/storage"
 )
 
-type findItemsResultItem struct {
-	BookID    string
-	URL       string
-	Author    string
-	Title     string
-	Available bool
-	ItemID    string
-	Location  string
-	Status    string
-	Error     string
+type getItemsResultItem struct {
+	BookID     string
+	URL        string
+	Author     string
+	Title      string
+	Available  bool
+	ItemID     string
+	Location   string
+	Status     string
+	Error      string
+	LastUpdate string
 }
-type findItemsResult struct {
-	Items []findItemsResultItem
+type getItemsResult struct {
+	Items []getItemsResultItem
 }
 
-type findItemsHandler struct {
+type getItemsHandler struct {
 	webStorage *storage.Storage
 	finder     bookfinder.BookFinder
 	timeout    time.Duration
 	tmpl       *template.Template
 }
 
-// NewFindItemsHandler creates handler to find books
-func NewFindItemsHandler(webStorage *storage.Storage, timeout time.Duration) (http.Handler, error) {
+// NewGetItemsHandler creates handler to find books
+func NewGetItemsHandler(webStorage *storage.Storage, timeout time.Duration) (http.Handler, error) {
 	tmpl, err := template.ParseGlob("./templates/*")
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse temlates: %s", err)
 	}
 
-	return &findItemsHandler{
+	return &getItemsHandler{
 		webStorage: webStorage,
 		finder:     kjftt.NewKJFTT(timeout),
 		timeout:    timeout,
@@ -53,48 +54,51 @@ func NewFindItemsHandler(webStorage *storage.Storage, timeout time.Duration) (ht
 }
 
 // ServeHTTP serves http request
-func (h *findItemsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *getItemsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), h.timeout)
 	defer cancel()
 
-	booksToFind, err := h.webStorage.GetBooks(ctx)
+	result, err := h.webStorage.GetBooks(ctx)
 	if err != nil {
 		log.Errorf("failed to get books json: %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	log.Debugf("finding items for %d books", len(booksToFind))
-	result := bookfinder.FindBooksItems(h.finder, booksToFind)
-
-	items := make([]findItemsResultItem, 0)
+	items := make([]getItemsResultItem, 0)
 	for _, book := range result {
-		if book.Error != nil {
-			items = append(items, findItemsResultItem{
-				BookID: book.Book.ID,
-				URL:    book.Book.URL,
-				Title:  book.Book.Title,
-				Author: book.Book.Author,
-				Error:  book.Error.Error(),
+		if book.Error != "" {
+			items = append(items, getItemsResultItem{
+				BookID:     book.ID,
+				URL:        book.URL,
+				Title:      book.Title,
+				Author:     book.Author,
+				LastUpdate: book.LastUpdate,
+				Error:      book.Error,
 			})
 			continue
 		}
 
-		for _, item := range book.Book.Items {
-			items = append(items, findItemsResultItem{
-				BookID:    book.Book.ID,
-				URL:       book.Book.URL,
-				Title:     book.Book.Title,
-				Author:    book.Book.Author,
-				Available: item.Available,
-				ItemID:    item.ItemID,
-				Location:  item.Location,
-				Status:    item.Status,
+		for _, item := range book.Items {
+			items = append(items, getItemsResultItem{
+				BookID:     book.ID,
+				URL:        book.URL,
+				Title:      book.Title,
+				Author:     book.Author,
+				Available:  item.Available,
+				ItemID:     item.ItemID,
+				Location:   item.Location,
+				Status:     item.Status,
+				LastUpdate: book.LastUpdate,
+				Error:      book.Error,
 			})
 		}
 	}
 
-	h.tmpl.ExecuteTemplate(w, "items.html", &findItemsResult{
+	err = h.tmpl.ExecuteTemplate(w, "items.html", &getItemsResult{
 		Items: items,
 	})
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+	}
 }

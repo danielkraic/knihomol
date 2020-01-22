@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"time"
 
@@ -41,12 +40,5 @@ func (h *findItemsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Debugf("finding items for %d books", len(booksToFind))
-	result := bookfinder.FindBooksItems(h.finder, booksToFind)
-
-	err = json.NewEncoder(w).Encode(result)
-	if err != nil {
-		log.Errorf("failed to encode json: %s", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+	bookfinder.FindBooksItems(h.finder, booksToFind, h.webStorage, h.timeout)
 }
