@@ -2,10 +2,11 @@ package kjftt
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/PuerkitoBio/goquery"
 	"github.com/danielkraic/knihomol/books"
 	log "github.com/sirupsen/logrus"
-	"strings"
 )
 
 //FindBooksItems finds book items in library for given book
@@ -38,7 +39,7 @@ func (kjftt *KJFTT) FindBooksItems(bookID string) *books.Book {
 				ItemID:    ciarovyKod,
 				Available: strings.HasPrefix(dostupnost, "Vypožičateľné") && strings.HasPrefix(status, "Dostupné"),
 				Status:    fmt.Sprintf("%s %s", dostupnost, status),
-				Location:  fmt.Sprintf("%s %s", ulozenie, signatura),
+				Location:  fmt.Sprintf("%s %s", signatura, ulozenie),
 			})
 		})
 	})
@@ -47,9 +48,21 @@ func (kjftt *KJFTT) FindBooksItems(bookID string) *books.Book {
 
 	return &books.Book{
 		ID:     bookID,
-		Title:  doc.Find(".title").First().Text(),
-		Author: doc.Find(".author").First().Text(),
+		Title:  parseTitle(doc.Find(".title").First().Text()),
+		Author: parseAuthor(doc.Find(".author").First().Text()),
 		URL:    kjftt.GetItemURL(bookID),
 		Items:  items,
 	}
+}
+
+func parseTitle(text string) string {
+	return strings.Split(text, "/")[0]
+}
+
+func parseAuthor(text string) string {
+	items := strings.Split(text, ",")
+	if len(items) > 2 {
+		return fmt.Sprintf("%s %s", items[1], items[0])
+	}
+	return text
 }
