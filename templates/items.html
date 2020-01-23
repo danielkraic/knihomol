@@ -1,18 +1,19 @@
 {{ template "header.html" . }}
 <div class="container">
-  
-    <table class="table table-striped table-hover">
+    
+    <input type="text" id="filter" onkeyup="filterItems()" placeholder="Search..">
+    <table class="table table-striped table-hover" id="itemsTable">
         <thead>
             <tr>
-                <th scope="col">BookID</th>
-                <th scope="col">Author</th>
-                <th scope="col">Title</th>
-                <th scope="col">Available</th>
-                <th scope="col">ItemID</th>
-                <th scope="col">Status</th>
-                <th scope="col">Location</th>
-                <th scope="col">Error</th>
-                <th scope="col">LastUpdate</th>
+                <th scope="col" onclick="sortTable(0)">BookID</th>
+                <th scope="col" onclick="sortTable(1)">Author</th>
+                <th scope="col" onclick="sortTable(2)">Title</th>
+                <th scope="col" onclick="sortTable(3)">Available</th>
+                <th scope="col" onclick="sortTable(4)">ItemID</th>
+                <th scope="col" onclick="sortTable(5)">Status</th>
+                <th scope="col" onclick="sortTable(6)">Location</th>
+                <th scope="col" onclick="sortTable(7)">Error</th>
+                <th scope="col" onclick="sortTable(8)">LastUpdate</th>
             </tr>
         </thead>
         <tbody>

@@ -42,11 +42,11 @@ func NewConfiguration(configFilePath string) (*Configuration, error) {
 
 	viper.SetDefault("addr", "0.0.0.0:80")
 	viper.SetDefault("api_prefix", "/v1")
-	viper.SetDefault("timeout", "3")
+	viper.SetDefault("timeout", "10")
 	viper.SetDefault("storage.uri", "mongodb://localhost:27017")
 	viper.SetDefault("storage.db_name", "knihomol")
 	viper.SetDefault("storage.collection_name", "books")
-	viper.SetDefault("storage.timeout", "3")
+	viper.SetDefault("storage.timeout", "5")
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
