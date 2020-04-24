@@ -12,10 +12,16 @@ import (
 
 //Configuration app configuration
 type Configuration struct {
-	Addr      string   `mapstructure:"addr"`
-	APIPrefix string   `mapstructure:"api_prefix"`
-	Timeout   uint     `mapstructure:"timeout"`
-	Storage   *Storage `mapstructure:"storage"`
+	Addr    string        `mapstructure:"addr"`
+	Timeout uint          `mapstructure:"timeout"`
+	Auth    BasicAuthPair `mapstructure:"auth"`
+	Storage *Storage      `mapstructure:"storage"`
+}
+
+//BasicAuthPair pair of username and password
+type BasicAuthPair struct {
+	Username string `mapstructure:"user"`
+	Password string `mapstructure:"pass"`
 }
 
 //Storage configuration of storage
@@ -41,8 +47,9 @@ func NewConfiguration(configFilePath string) (*Configuration, error) {
 	}
 
 	viper.SetDefault("addr", "0.0.0.0:80")
-	viper.SetDefault("api_prefix", "/v1")
 	viper.SetDefault("timeout", "10")
+	viper.SetDefault("auth.user", "")
+	viper.SetDefault("auth.pass", "")
 	viper.SetDefault("storage.uri", "mongodb://localhost:27017")
 	viper.SetDefault("storage.db_name", "knihomol")
 	viper.SetDefault("storage.collection_name", "books")
@@ -52,14 +59,14 @@ func NewConfiguration(configFilePath string) (*Configuration, error) {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			// Config file not found; ignore error
 		} else {
-			return nil, fmt.Errorf("failed to read config file: %s", err)
+			return nil, fmt.Errorf("read config file: %s", err)
 		}
 	}
 
 	var configuration Configuration
 	err = viper.Unmarshal(&configuration)
 	if err != nil {
-		return nil, fmt.Errorf("unable to decode configration to struct, %s", err)
+		return nil, fmt.Errorf("unmarshal configration, %s", err)
 	}
 
 	return &configuration, nil
@@ -69,7 +76,7 @@ func NewConfiguration(configFilePath string) (*Configuration, error) {
 func (c *Configuration) PrintConfiguration() {
 	data, err := yaml.Marshal(c)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to print configuration: %s", err)
+		fmt.Fprintf(os.Stderr, "print configuration: %s", err)
 		return
 	}
 	fmt.Printf("%s\n", data)

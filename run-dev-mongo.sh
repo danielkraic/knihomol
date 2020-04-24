@@ -1,7 +1,7 @@
 #!/bin/bash
 
 CONTAINER_NAME="knihomoldb"
-IS_RUNNING=$(podman container ls | grep $CONTAINER_NAME)
+IS_RUNNING=$(docker container ls | grep $CONTAINER_NAME)
 
 function knihomol_status() {
     if [ -n "$IS_RUNNING" ]; then
@@ -9,7 +9,7 @@ function knihomol_status() {
         exit 0
     fi
 
-    IS_STOPPED=$(podman container ls -a | grep $CONTAINER_NAME)
+    IS_STOPPED=$(docker container ls -a | grep $CONTAINER_NAME)
     if [ -n "$IS_STOPPED" ]; then
         echo "$CONTAINER_NAME container is stopped"
         exit 0
@@ -25,7 +25,7 @@ function knihomol_start() {
     fi
 
     echo "$CONTAINER_NAME container is NOT running"
-    if ! podman run -d -p 27017:27017  -v /opt/knihomoldb:/data/db --name $CONTAINER_NAME mongo; then
+    if ! docker run -d -p 27017:27017  -v /opt/knihomoldb:/data/db --name $CONTAINER_NAME mongo; then
         echo "failed to start $CONTAINER_NAME container"
         exit 1
     fi
@@ -39,7 +39,7 @@ function knihomol_stop() {
         exit 0
     fi
 
-    if ! podman container stop $CONTAINER_NAME; then
+    if ! docker container stop $CONTAINER_NAME; then
         echo "failed to start $CONTAINER_NAME"
         exit 1
     fi
@@ -52,13 +52,13 @@ function knihomol_rm() {
         knihomol_stop
     fi
 
-    IS_STOPPED=$(podman container ls -a | grep $CONTAINER_NAME)
+    IS_STOPPED=$(docker container ls -a | grep $CONTAINER_NAME)
     if [ -z "$IS_STOPPED" ]; then
         echo "$CONTAINER_NAME container not existing"
         exit 0
     fi
 
-    if ! podman container rm $CONTAINER_NAME; then
+    if ! docker container rm $CONTAINER_NAME; then
         echo "failed to rm $CONTAINER_NAME container"
         exit 1
     fi

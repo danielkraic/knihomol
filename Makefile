@@ -10,8 +10,8 @@ LDFLAGS=-ldflags "-X=main.Version=$(VERSION) -X=main.Commit=$(COMMIT) -X=main.Bu
 
 all: test race cover build
 
-build:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -mod=vendor $(LDFLAGS) -o $(BINARY_NAME) -v
+build: fmt lint vet errcheck
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(LDFLAGS) -o $(BINARY_NAME) -v
 
 clean:
 	go clean
@@ -31,13 +31,13 @@ coverprofile:
 	go tool cover -html=coverage.out
 
 errcheck:
-	go list ./... | grep -v "vendor\|errcheck" | xargs errcheck
+	go list ./... | xargs errcheck
 
 vet:
 	go list ./... | grep -v vendor | xargs go vet
 
 lint:
-	go list ./... | grep -v vendor | xargs golint
+	go list ./... | xargs golint
 
 fmt:
 	go fmt ./...

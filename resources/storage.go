@@ -1,4 +1,4 @@
-package storage
+package resources
 
 import (
 	"context"
@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/danielkraic/knihomol/books"
 	"github.com/danielkraic/knihomol/configuration"
+	"github.com/danielkraic/knihomol/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -27,12 +27,12 @@ func NewStorage(cfg *configuration.Storage, timeout time.Duration) (*Storage, er
 
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(cfg.URI))
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to mongo %s: %s", cfg.URI, err)
+		return nil, fmt.Errorf("connect to mongo %s: %s", cfg.URI, err)
 	}
 
 	err = client.Ping(ctx, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to ping to mongo %s: %s", cfg.URI, err)
+		return nil, fmt.Errorf("ping mongo %s: %s", cfg.URI, err)
 	}
 
 	return &Storage{
@@ -42,10 +42,10 @@ func NewStorage(cfg *configuration.Storage, timeout time.Duration) (*Storage, er
 }
 
 //GetBooks retrieve books from DB
-func (s *Storage) GetBooks(ctx context.Context) ([]*books.Book, error) {
+func (s *Storage) GetBooks(ctx context.Context) ([]*models.Book, error) {
 	cur, err := s.collection.Find(ctx, bson.M{})
 	if err != nil {
-		return nil, fmt.Errorf("failed to get books: %s", err)
+		return nil, fmt.Errorf("get books: %s", err)
 	}
 	defer func() {
 		err = cur.Close(ctx)
@@ -54,13 +54,13 @@ func (s *Storage) GetBooks(ctx context.Context) ([]*books.Book, error) {
 		}
 	}()
 
-	result := []*books.Book{}
+	result := []*models.Book{}
 
 	for cur.Next(ctx) {
-		var item *books.Book
+		var item *models.Book
 		err = cur.Decode(&item)
 		if err != nil {
-			return nil, fmt.Errorf("failed to decode book from DB: %s", err)
+			return nil, fmt.Errorf("decode book from DB: %s", err)
 		}
 
 		result = append(result, item)
@@ -69,8 +69,8 @@ func (s *Storage) GetBooks(ctx context.Context) ([]*books.Book, error) {
 	return result, nil
 }
 
-//SaveBook saves book from DB
-func (s *Storage) SaveBook(ctx context.Context, book *books.Book) error {
+//SaveBook saves book to DB
+func (s *Storage) SaveBook(ctx context.Context, book *models.Book) error {
 	filter := bson.D{primitive.E{Key: "_id", Value: book.ID}}
 	update := bson.D{primitive.E{Key: "$set", Value: book}}
 	opt := &options.UpdateOptions{}
@@ -78,7 +78,19 @@ func (s *Storage) SaveBook(ctx context.Context, book *books.Book) error {
 
 	_, err := s.collection.UpdateOne(ctx, filter, update, opt)
 	if err != nil {
-		return fmt.Errorf("failed to save book: %s", err)
+		return fmt.Errorf("save book: %s", err)
+	}
+
+	return nil
+}
+
+//RemoveBook removes book from DB
+func (s *Storage) RemoveBook(ctx context.Context, bookID string) error {
+	filter := bson.D{primitive.E{Key: "_id", Value: bookID}}
+
+	_, err := s.collection.DeleteOne(ctx, filter)
+	if err != nil {
+		return fmt.Errorf("remove book: %s", err)
 	}
 
 	return nil

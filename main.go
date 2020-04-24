@@ -10,9 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/danielkraic/knihomol/configuration"
-	"github.com/danielkraic/knihomol/storage"
-	"github.com/danielkraic/knihomol/web"
-	"github.com/danielkraic/knihomol/web/handlers"
+	"github.com/danielkraic/knihomol/resources"
 	"github.com/spf13/pflag"
 )
 
@@ -38,19 +36,19 @@ func main() {
 	printConfig := pflag.BoolP("print-config", "p", false, "print configuration")
 	pflag.Parse()
 
-	apiConfiguration, err := configuration.NewConfiguration(*configFile)
+	conf, err := configuration.NewConfiguration(*configFile)
 	if err != nil {
-		log.Fatalf("failed to read configuration: %s", err)
+		log.Fatalf("read configuration: %s", err)
 	}
 
 	if *printConfig {
-		apiConfiguration.PrintConfiguration()
+		conf.PrintConfiguration()
 		return
 	}
 
-	apiStorage, err := storage.NewStorage(apiConfiguration.Storage, time.Duration(apiConfiguration.Storage.Timeout)*time.Second)
+	storage, err := resources.NewStorage(conf.Storage, time.Duration(conf.Storage.Timeout)*time.Second)
 	if err != nil {
-		log.Fatalf("failed to create storage: %s", err)
+		log.Fatalf("create storage: %s", err)
 	}
 
 	if *checkConfig {
@@ -61,10 +59,10 @@ func main() {
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
 
-	web, err := web.NewWeb(&handlers.Version{Version: Version, Commit: Commit, Build: Build}, apiConfiguration, apiStorage)
+	server, err := NewServer(conf, storage)
 	if err != nil {
-		log.Fatalf("failed to create API: %s", err)
+		log.Fatalf("create server: %s", err)
 	}
 
-	web.Run(signalChan)
+	server.Run(signalChan)
 }
