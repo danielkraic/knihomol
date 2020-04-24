@@ -183,3 +183,24 @@ func (booksView *BooksView) RemoveBook(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 	}
 }
+
+//Refresh refresh books in DB
+func (booksView *BooksView) Refresh(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), booksView.timeout)
+	defer cancel()
+
+	var result manageBookResult
+	result.Success = false
+
+	errs := booksView.controller.Refresh(ctx)
+	if len(errs) != 0 {
+		result.Err = fmt.Errorf("refresh failed: '%d' books failed. error[0]=%s", len(errs), errs[0])
+	} else {
+		result.Success = true
+	}
+
+	err := booksView.tmpl.ExecuteTemplate(w, "refresh.html", result)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+	}
+}

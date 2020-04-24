@@ -74,6 +74,7 @@ func (server *Server) createRouter() (*mux.Router, error) {
 	restricted.Use(basicAuth.Middleware)
 	restricted.HandleFunc("/add-book", booksView.AddBook).Methods(http.MethodGet, http.MethodPost)
 	restricted.HandleFunc("/remove-book", booksView.RemoveBook).Methods(http.MethodPost)
+	restricted.HandleFunc("/refresh", booksView.Refresh).Methods(http.MethodPost)
 
 	return r, nil
 }
