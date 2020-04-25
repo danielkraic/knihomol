@@ -95,3 +95,15 @@ func (s *Storage) RemoveBook(ctx context.Context, bookID string) error {
 
 	return nil
 }
+
+//RemoveBooks removes books from DB
+func (s *Storage) RemoveBooks(ctx context.Context, bookIDs []string) error {
+	filter := bson.M{"_id": bson.M{"$in": bookIDs}}
+
+	_, err := s.collection.DeleteMany(ctx, filter)
+	if err != nil {
+		return fmt.Errorf("remove books: %s", err)
+	}
+
+	return nil
+}

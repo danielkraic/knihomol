@@ -7,14 +7,14 @@ import (
 	"os"
 	"time"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/danielkraic/knihomol/configuration"
 	"github.com/danielkraic/knihomol/controllers"
 	"github.com/danielkraic/knihomol/middlewares"
 	"github.com/danielkraic/knihomol/resources"
 	"github.com/danielkraic/knihomol/views"
+
 	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
 )
 
 //Server serves html requests
@@ -66,6 +66,8 @@ func (server *Server) createRouter() (*mux.Router, error) {
 		return nil, fmt.Errorf("create BooksView: %w", err)
 	}
 
+	api := views.NewAPI(server.configuration, server.controller)
+
 	basicAuth := middlewares.NewAuthenticationMiddleware(server.configuration.Auth.Username, server.configuration.Auth.Password)
 
 	r.HandleFunc("/", booksView.Index).Methods(http.MethodGet)
@@ -75,6 +77,13 @@ func (server *Server) createRouter() (*mux.Router, error) {
 	restricted.HandleFunc("/add-book", booksView.AddBook).Methods(http.MethodGet, http.MethodPost)
 	restricted.HandleFunc("/remove-book", booksView.RemoveBook).Methods(http.MethodPost)
 	restricted.HandleFunc("/refresh", booksView.Refresh).Methods(http.MethodPost)
+
+	apiRouter := r.PathPrefix("/api").Subrouter()
+	apiRouter.HandleFunc("/books", api.GetBooks).Methods(http.MethodGet)
+	apiRouter.HandleFunc("/books/add", api.AddBook).Methods(http.MethodPost)
+	apiRouter.HandleFunc("/books/remove", api.RemoveBook).Methods(http.MethodPost)
+	apiRouter.HandleFunc("/books/remove-many", api.RemoveBooks).Methods(http.MethodPost)
+	apiRouter.HandleFunc("/books/refresh", api.RefreshBooks).Methods(http.MethodPost)
 
 	return r, nil
 }

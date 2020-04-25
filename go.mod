@@ -5,6 +5,7 @@ go 1.12
 require (
 	github.com/DataDog/zstd v1.4.4 // indirect
 	github.com/PuerkitoBio/goquery v1.5.0
+	github.com/go-playground/validator/v10 v10.2.0
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/go-cmp v0.3.1 // indirect
 	github.com/gorilla/mux v1.7.3

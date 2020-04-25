@@ -53,6 +53,11 @@ func (controller *BooksController) RemoveBook(ctx context.Context, bookID string
 	return controller.storage.RemoveBook(ctx, bookID)
 }
 
+//RemoveBooks removes books from storage
+func (controller *BooksController) RemoveBooks(ctx context.Context, bookIDs []string) error {
+	return controller.storage.RemoveBooks(ctx, bookIDs)
+}
+
 //Refresh refresh all books details and available items
 func (controller *BooksController) Refresh(ctx context.Context) []error {
 	books, err := controller.GetBooks(ctx)
