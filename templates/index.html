@@ -1,16 +1,41 @@
 {{ template "header.html" . }}
 <div class="container" role="main" id="bookItems">
 
-  {{range .Items}}
-  <div class="card">
-    <div class="card-body">
-      <div class="card-title">
-        <h5>
-          <a href="{{.URL}}">{{.Title}}</a>
-        </h5>
-      </div>
+  <form>
+    <input class="form-control" type="search" placeholder="Search" id="filter" onkeyup="filterItems()"
+      aria-label="Search">
 
-      <h6 class="card-subtitle mb-2 text-muted">{{.Author}}</h6>
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" value="" id="availableOnly" onchange="filterItems()">
+      <label class="form-check-label" for="availableOnly">
+        Show only available
+      </label>
+    </div>
+
+  </form>
+
+
+  {{range .Items}}
+  <div class="card my-2">
+    <div class="card-body">
+      <div class="card-title container-fluid">
+        <div class="row">
+          <div class="col px-0">
+            <h5>
+              <a href="{{.URL}}">{{.Title}}</a>
+            </h5>
+            <h6 class="card-subtitle mb-2 text-muted">{{.Author}}</h6>
+          </div>
+          <div class="col px-0">
+            <form method="POST" action="/restricted/remove-book">
+              <input type="hidden" id="bookid" name="bookid" value="{{.BookID}}"> 
+              <button type="submit" class="close" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
 
       {{if .Error}}
       <div class="alert alert-danger" role="alert">
@@ -37,13 +62,14 @@
         <dt class="col-sm-3">Location</dt>
         <dd class="col-sm-9">{{.Location}}</dd>
 
+        {{if .LastUpdate}}
         <dt class="col-sm-3">Last update</dt>
         <dd class="col-sm-9">{{.LastUpdate}}</dd>
+        {{end}}
       </dl>
 
     </div>
   </div>
   {{end}}
-
 </div>
 {{ template "footer.html"  . }}

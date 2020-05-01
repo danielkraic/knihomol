@@ -18,7 +18,7 @@
   </head>
   <body>
 
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <nav class="navbar navbar-expand-lg container">
       <a class="navbar-brand" href="/">Knihomol</a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -34,15 +34,6 @@
           </li>
         </ul>
         
-        <form class="form-inline mr-sm-2">
-          <input type="checkbox" class="form-check-input" id="availableOnly" onchange="filterItems()" aria-label="Search">
-          <label class="form-check-label" for="availableOnly">Show only available</label>
-        </form>
-
-        <form class="form-inline my-2 my-lg-0">
-          <input class="form-control mr-sm-2" type="search" placeholder="Search" id="filter" onkeyup="filterItems()" aria-label="Search">
-        </form>
-
         <form class="form-inline my-2 my-lg-0" method="POST" action="/restricted/refresh">
           <button class="btn btn-outline-success my-2 my-sm-0" type="submit">
             <span class="glyphicon glyphicon-refresh"></span> Refresh
