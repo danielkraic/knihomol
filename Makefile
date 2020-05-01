@@ -10,7 +10,9 @@ LDFLAGS=-ldflags "-X=main.Version=$(VERSION) -X=main.Commit=$(COMMIT) -X=main.Bu
 
 all: test race cover build
 
-build: fmt lint vet errcheck
+build: fmt lint vet errcheck build-only
+
+build-only:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build $(LDFLAGS) -o $(BINARY_NAME) -v
 
 clean:

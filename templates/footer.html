@@ -63,35 +63,26 @@
 
       //source: https://www.w3schools.com/howto/howto_js_filter_table.asp
       function filterItems() {
-        // Declare variables
         var input, filter, table, tr, td, i, txtValue;
-        input = document.getElementById("filter");
-        filter = input.value.toUpperCase();
-        table = document.getElementById("itemsTable");
-        tbody = table.getElementsByTagName("tbody");
-        tr = tbody[0].getElementsByTagName("tr");
-      
-        // Loop through all table rows, and hide those who don't match the search query
-        for (i = 0; i < tr.length; i++) {
-          td = tr[i].getElementsByTagName("td");
-          if (matchItem(filter, td)) {
-            tr[i].style.display = "";
-          } else {
-            tr[i].style.display = "none";
-          }
-        }
-      }
+        filter = document.getElementById("filter").value.toUpperCase();
+        availableOnly = document.getElementById("availableOnly").checked;
+        base = document.getElementById("bookItems");
+        books = base.getElementsByClassName("card");
+        
+        for (i = 0; i < books.length; i++) {
+          details = [...books[i].getElementsByTagName("dd")].map(i => i.innerText.trim());
+          author = books[i].getElementsByTagName("h6")[0].innerText;
+          title =  books[i].getElementsByTagName("a")[0].innerText;
+          text = [author, title].concat(details).join(" ")
 
-      function matchItem(filter, elements) {
-        if (elements) {
-          for (i = 0; i < elements.length; i++) {
-            txtValue = elements[i].textContent || elements[i].innerText;
-              if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                return true;
-              }
+          available = books[i].getElementsByClassName("knihomolAvailable")[0].innerText.trim();
+          
+          if ((!availableOnly || available == "true") && text.toUpperCase().indexOf(filter) > -1) {
+            books[i].style.display = "";
+          } else {
+            books[i].style.display = "none";
           }
         }
-        return false;
       }
       </script>
   </body>

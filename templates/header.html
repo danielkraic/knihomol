@@ -33,9 +33,16 @@
             <a class="nav-link" href="/restricted/add-book">Add book</a>
           </li>
         </ul>
+        
+        <form class="form-inline mr-sm-2">
+          <input type="checkbox" class="form-check-input" id="availableOnly" onchange="filterItems()" aria-label="Search">
+          <label class="form-check-label" for="availableOnly">Show only available</label>
+        </form>
+
         <form class="form-inline my-2 my-lg-0">
           <input class="form-control mr-sm-2" type="search" placeholder="Search" id="filter" onkeyup="filterItems()" aria-label="Search">
         </form>
+
         <form class="form-inline my-2 my-lg-0" method="POST" action="/restricted/refresh">
           <button class="btn btn-outline-success my-2 my-sm-0" type="submit">
             <span class="glyphicon glyphicon-refresh"></span> Refresh

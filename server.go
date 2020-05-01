@@ -79,6 +79,7 @@ func (server *Server) createRouter() (*mux.Router, error) {
 	restricted.HandleFunc("/refresh", booksView.Refresh).Methods(http.MethodPost)
 
 	apiRouter := r.PathPrefix("/api").Subrouter()
+	apiRouter.Use(basicAuth.Middleware)
 	apiRouter.HandleFunc("/books", api.GetBooks).Methods(http.MethodGet)
 	apiRouter.HandleFunc("/books/add", api.AddBook).Methods(http.MethodPost)
 	apiRouter.HandleFunc("/books/remove", api.RemoveBook).Methods(http.MethodPost)
