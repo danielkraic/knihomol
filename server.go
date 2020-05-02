@@ -70,6 +70,7 @@ func (server *Server) createRouter() (*mux.Router, error) {
 
 	basicAuth := middlewares.NewAuthenticationMiddleware(server.configuration.Auth.Username, server.configuration.Auth.Password)
 
+	r.Use(forceSsl)
 	r.HandleFunc("/", booksView.Index).Methods(http.MethodGet)
 
 	restricted := r.PathPrefix("/restricted/").Subrouter()
@@ -87,4 +88,17 @@ func (server *Server) createRouter() (*mux.Router, error) {
 	apiRouter.HandleFunc("/books/refresh", api.RefreshBooks).Methods(http.MethodPost)
 
 	return r, nil
+}
+
+func forceSsl(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if os.Getenv("GO_ENV") == "production" {
+			if r.Header.Get("x-forwarded-proto") != "https" {
+				sslURL := "https://" + r.Host + r.RequestURI
+				http.Redirect(w, r, sslURL, http.StatusTemporaryRedirect)
+				return
+			}
+		}
+		next.ServeHTTP(w, r)
+	})
 }
