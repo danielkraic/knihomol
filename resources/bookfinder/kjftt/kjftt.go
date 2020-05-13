@@ -170,15 +170,15 @@ func (kjftt *KJFTT) GetBook(bookID string) (*models.Book, error) {
 }
 
 func parseTitle(text string) string {
-	return strings.Split(text, "/")[0]
+	return strings.TrimSpace(strings.Split(text, "/")[0])
 }
 
 func parseAuthor(text string) string {
 	items := strings.Split(text, ",")
 	if len(items) > 2 {
-		return fmt.Sprintf("%s %s", items[1], items[0])
+		return strings.TrimSpace(fmt.Sprintf("%s %s", items[1], items[0]))
 	}
-	return text
+	return strings.TrimSpace(text)
 }
 
 func getBookInfoItem(doc *goquery.Document, tagName string) string {
@@ -208,5 +208,5 @@ func getBookInfoItem(doc *goquery.Document, tagName string) string {
 		})
 	})
 
-	return result
+	return strings.TrimSpace(result)
 }
