@@ -50,28 +50,32 @@ func (booksView BooksView) Index(w http.ResponseWriter, r *http.Request) {
 	for _, book := range books {
 		if book.Error != "" {
 			items = append(items, indexResultItem{
-				BookID:     book.ID,
-				URL:        book.URL,
-				Title:      book.Title,
-				Author:     book.Author,
-				LastUpdate: book.LastUpdate,
-				Error:      book.Error,
+				BookID:      book.ID,
+				URL:         book.URL,
+				Title:       book.Title,
+				Author:      book.Author,
+				Publisher:   book.Publisher,
+				Description: book.Description,
+				LastUpdate:  book.LastUpdate,
+				Error:       book.Error,
 			})
 			continue
 		}
 
 		for _, item := range book.Items {
 			items = append(items, indexResultItem{
-				BookID:     book.ID,
-				URL:        book.URL,
-				Title:      book.Title,
-				Author:     book.Author,
-				Available:  item.Available,
-				ItemID:     item.ItemID,
-				Location:   item.Location,
-				Status:     item.Status,
-				LastUpdate: book.LastUpdate,
-				Error:      book.Error,
+				BookID:      book.ID,
+				URL:         book.URL,
+				Title:       book.Title,
+				Author:      book.Author,
+				Publisher:   book.Publisher,
+				Description: book.Description,
+				Available:   item.Available,
+				ItemID:      item.ItemID,
+				Location:    item.Location,
+				Status:      item.Status,
+				LastUpdate:  book.LastUpdate,
+				Error:       book.Error,
 			})
 		}
 	}
@@ -89,16 +93,18 @@ type indexResult struct {
 }
 
 type indexResultItem struct {
-	BookID     string
-	URL        string
-	Author     string
-	Title      string
-	Available  bool
-	ItemID     string
-	Location   string
-	Status     string
-	Error      string
-	LastUpdate string
+	BookID      string
+	URL         string
+	Author      string
+	Title       string
+	Publisher   string
+	Description string
+	Available   bool
+	ItemID      string
+	Location    string
+	Status      string
+	Error       string
+	LastUpdate  string
 }
 
 //AddBook renders view to add book

@@ -8,13 +8,15 @@ import (
 
 //Book contains book details
 type Book struct {
-	ID         string  `json:"id" bson:"_id"`
-	Title      string  `json:"title" bson:"title"`
-	Author     string  `json:"author" bson:"author"`
-	URL        string  `json:"url" bson:"url"`
-	Items      []*Item `json:"items" bson:"items"`
-	LastUpdate string  `json:"last_update" bson:"last_update"`
-	Error      string  `json:"error" bson:"error"`
+	ID          string  `json:"id" bson:"_id"`
+	Title       string  `json:"title" bson:"title"`
+	Author      string  `json:"author" bson:"author"`
+	Description string  `json:"description" bson:"description"`
+	Publisher   string  `json:"publisher" bson:"publisher"`
+	URL         string  `json:"url" bson:"url"`
+	Items       []*Item `json:"items" bson:"items"`
+	LastUpdate  string  `json:"last_update" bson:"last_update"`
+	Error       string  `json:"error" bson:"error"`
 }
 
 func (book Book) String() string {

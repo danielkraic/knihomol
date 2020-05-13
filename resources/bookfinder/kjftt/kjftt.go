@@ -159,11 +159,13 @@ func (kjftt *KJFTT) GetBook(bookID string) (*models.Book, error) {
 	log.Debugf("items found: %d", len(items))
 
 	return &models.Book{
-		ID:     bookID,
-		Title:  parseTitle(doc.Find(".title").First().Text()),
-		Author: parseAuthor(doc.Find(".author").First().Text()),
-		URL:    url,
-		Items:  items,
+		ID:          bookID,
+		Title:       parseTitle(doc.Find(".title").First().Text()),
+		Author:      parseAuthor(doc.Find(".author").First().Text()),
+		Publisher:   getBookInfoItem(doc, "Vydavateľ"),
+		Description: getBookInfoItem(doc, "Fyzický popis"),
+		URL:         url,
+		Items:       items,
 	}, nil
 }
 
@@ -177,4 +179,34 @@ func parseAuthor(text string) string {
 		return fmt.Sprintf("%s %s", items[1], items[0])
 	}
 	return text
+}
+
+func getBookInfoItem(doc *goquery.Document, tagName string) string {
+	var result string
+
+	doc.Find("#itemView").Each(func(iItemView int, itemView *goquery.Selection) {
+		if result != "" {
+			return
+		}
+
+		itemView.Find("tr").Each(func(iTr int, tr *goquery.Selection) {
+			if result != "" {
+				return
+			}
+
+			var label string
+			tr.Find("td:nth-child(1)").Each(func(itd int, td *goquery.Selection) {
+				label = td.Text()
+			})
+			if label != tagName {
+				return
+			}
+
+			tr.Find("td:nth-child(2) > div:nth-child(1) > span:nth-child(1)").Each(func(ispan int, span *goquery.Selection) {
+				result = span.Text()
+			})
+		})
+	})
+
+	return result
 }
