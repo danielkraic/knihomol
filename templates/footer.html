@@ -7,24 +7,35 @@
     <script>
       //source: https://www.w3schools.com/howto/howto_js_filter_table.asp
       function filterItems() {
-        var input, filter, table, tr, td, i, txtValue;
-        filter = document.getElementById("filter").value.toUpperCase();
-        availableOnly = document.getElementById("availableOnly").checked;
-        base = document.getElementById("bookItems");
-        books = base.getElementsByClassName("card");
-        
-        for (i = 0; i < books.length; i++) {
-          details = [...books[i].getElementsByTagName("dd")].map(i => i.innerText.trim());
-          author = books[i].getElementsByTagName("h6")[0].innerText;
-          title =  books[i].getElementsByTagName("a")[0].innerText;
+        var filter = document.getElementById("filter").value.toUpperCase();
+        var availableOnly = document.getElementById("availableOnly").checked;
+        var base = document.getElementById("bookItems");
+
+        var cards = base.getElementsByClassName("card");
+        for (i = 0; i < cards.length; i++) {
+          details = [...cards[i].getElementsByTagName("dd")].map(i => i.innerText.trim());
+          author = cards[i].getElementsByTagName("h6")[0].innerText;
+          title =  cards[i].getElementsByTagName("a")[0].innerText;
           text = [author, title].concat(details).join(" ")
 
-          available = books[i].getElementsByClassName("knihomolAvailable")[0].innerText.trim();
-          
+          available = cards[i].getElementsByClassName("knihomolAvailable")[0].innerText.trim();
+
           if ((!availableOnly || available == "true") && text.toUpperCase().indexOf(filter) > -1) {
-            books[i].style.display = "";
+            cards[i].style.display = "";
           } else {
-            books[i].style.display = "none";
+            cards[i].style.display = "none";
+          }
+        }
+
+        var tableItems = base.getElementsByClassName("tritem");
+        for (i = 0; i < tableItems.length; i++) {
+          text = tableItems[i].getElementsByClassName("tdname")[0].innerText;
+          available = tableItems[i].getElementsByClassName("tdstatus")[0].innerText.trim().includes("true");
+
+          if ((!availableOnly || available) && text.toUpperCase().indexOf(filter) > -1) {
+            tableItems[i].style.display = "";
+          } else {
+            tableItems[i].style.display = "none";
           }
         }
       }
