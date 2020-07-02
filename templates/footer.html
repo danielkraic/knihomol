@@ -13,12 +13,12 @@
 
         var cards = base.getElementsByClassName("card");
         for (i = 0; i < cards.length; i++) {
-          details = [...cards[i].getElementsByTagName("dd")].map(i => i.innerText.trim());
-          author = cards[i].getElementsByTagName("h6")[0].innerText;
-          title =  cards[i].getElementsByTagName("a")[0].innerText;
-          text = [author, title].concat(details).join(" ")
+          var details = [...cards[i].getElementsByTagName("dd")].map(i => i.innerText.trim());
+          var author = cards[i].getElementsByTagName("h6")[0].innerText;
+          var title =  cards[i].getElementsByTagName("a")[0].innerText;
+          var text = [author, title].concat(details).join(" ")
 
-          available = cards[i].getElementsByClassName("knihomolAvailable")[0].innerText.trim();
+          var available = cards[i].getElementsByClassName("knihomolAvailable")[0].innerText.trim();
 
           if ((!availableOnly || available == "true") && text.toUpperCase().indexOf(filter) > -1) {
             cards[i].style.display = "";
@@ -29,8 +29,10 @@
 
         var tableItems = base.getElementsByClassName("tritem");
         for (i = 0; i < tableItems.length; i++) {
-          text = tableItems[i].getElementsByClassName("tdname")[0].innerText;
-          available = tableItems[i].getElementsByClassName("tdstatus")[0].innerText.trim().includes("true");
+          var book = tableItems[i].getElementsByClassName("tdname")[0].innerText;
+          var status = tableItems[i].getElementsByClassName("tdstatus")[0].innerText;
+          var text = [book, status].join(" ")
+          var available = tableItems[i].getElementsByClassName("tdstatus")[0].innerText.trim().includes("true");
 
           if ((!availableOnly || available) && text.toUpperCase().indexOf(filter) > -1) {
             tableItems[i].style.display = "";
