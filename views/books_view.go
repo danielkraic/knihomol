@@ -107,6 +107,59 @@ type indexResultItem struct {
 	LastUpdate  string
 }
 
+//ListBooks renders view to list books
+func (booksView *BooksView) ListBooks(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), booksView.timeout)
+	defer cancel()
+
+	books, err := booksView.controller.GetBooks(ctx)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var items []indexResultItem
+	for _, book := range books {
+		if book.Error != "" {
+			items = append(items, indexResultItem{
+				BookID:      book.ID,
+				URL:         book.URL,
+				Title:       book.Title,
+				Author:      book.Author,
+				Publisher:   book.Publisher,
+				Description: book.Description,
+				LastUpdate:  book.LastUpdate,
+				Error:       book.Error,
+			})
+			continue
+		}
+
+		for _, item := range book.Items {
+			items = append(items, indexResultItem{
+				BookID:      book.ID,
+				URL:         book.URL,
+				Title:       book.Title,
+				Author:      book.Author,
+				Publisher:   book.Publisher,
+				Description: book.Description,
+				Available:   item.Available,
+				ItemID:      item.ItemID,
+				Location:    item.Location,
+				Status:      item.Status,
+				LastUpdate:  book.LastUpdate,
+				Error:       book.Error,
+			})
+		}
+	}
+
+	err = booksView.tmpl.ExecuteTemplate(w, "list.html", &indexResult{
+		Items: items,
+	})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
 //AddBook renders view to add book
 func (booksView *BooksView) AddBook(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), booksView.timeout)

@@ -1,0 +1,36 @@
+{{ template "header.html" . }}
+<div class="container" role="main" id="bookItems">
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Book</th>
+        <th scope="col">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Items}}
+      <tr>
+        <td><a href="{{.URL}}">{{.Title}}, {{.Author}}</a></td>
+        <td>
+            {{if .Error}}
+            <span class="badge badge-danger">{{.Error}}<span>
+            {{else}}
+            <small>{{.Available}}: {{.Status}}, {{.Location}}, {{.LastUpdate}}</small>
+            {{end}}
+            <div class="col px-0">
+              <form method="POST" action="/restricted/remove-book">
+                <input type="hidden" id="bookid" name="bookid" value="{{.BookID}}">
+                <button type="submit" class="close" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </form>
+            </div>
+        </td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+
+</div>
+{{ template "footer.html"  . }}

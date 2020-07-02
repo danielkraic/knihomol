@@ -72,6 +72,7 @@ func (server *Server) createRouter() (*mux.Router, error) {
 
 	r.Use(forceSsl)
 	r.HandleFunc("/", booksView.Index).Methods(http.MethodGet)
+	r.HandleFunc("/list", booksView.ListBooks).Methods(http.MethodGet)
 
 	restricted := r.PathPrefix("/restricted/").Subrouter()
 	restricted.Use(basicAuth.Middleware)
